@@ -5,10 +5,10 @@
   connection: ssh
   tasks:
 
-     - name: Install Git on Most Machines
+     - name: Install Git on Host Machines
        action: yum pkg=git state=present
 
-     - name: Install docker on Most Machines
+     - name: Install docker on Host Machines
        action: yum pkg=docker state=present
 
      - name: Start Docker Server on Host Machines 
