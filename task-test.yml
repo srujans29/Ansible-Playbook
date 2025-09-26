@@ -1,5 +1,5 @@
 ---
-- host: webservers
+- hosts: webservers
   user: ansible
   become: true
   connection: ssh
