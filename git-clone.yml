@@ -1,0 +1,12 @@
+---
+- hosts: webservers
+  user: ansible
+  become: true
+  connection: ssh
+  tasks:
+     - name: Cloning a Git repository
+       git:
+         repo: https://github.com/Msocial123/Flipkart-Clone.git
+         dest: /opt/clone
+         version: main 
+         force: yes
