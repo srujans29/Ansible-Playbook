@@ -1,58 +1,53 @@
+---
 - hosts: webservers
   user: ansible
   become: yes
   connection: ssh
+ 
+  vars:
+    java_package: java-17-amazon-corretto-devel
+    jenkins_repo_url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    jenkins_key_url: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+ 
   tasks:
-    - name: Install Openjdk
-      yum:
-        name: java-17-amazon-corretto.x86_64
+    - name: Install OpenJDK 17
+      dnf:
+        name: "{{ java_package }}"
         state: present
-
-    - name: Download the Jenkins Repo
+ 
+    - name: Download Jenkins repository file
       get_url:
-        url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+        url: "{{ jenkins_repo_url }}"
         dest: /etc/yum.repos.d/jenkins.repo
-
-    - name: Import Jenkins GPG Key
-      rpm_key:
-        key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
-        state: present
-
-    - name: Download EPEL release RPM
-      get_url:
-        url: http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-        dest: /tmp/epel-release-latest-7.noarch.rpm
-
-    - name: Install EPEL release RPM
-      yum:
-        name: /tmp/epel-release-latest-7.noarch.rpm
-        state: present
-        disable_gpg_check: true
-
+ 
+    - name: Import Jenkins GPG key
+      shell: rpm --import "{{ jenkins_key_url }}"
+ 
     - name: Install Jenkins
-      yum:
+      dnf:
         name: jenkins
         state: present
-
-    - name: Start Jenkins
+ 
+    - name: Start Jenkins service
       service:
         name: jenkins
         state: started
-
-    - name: Enable Jenkins on boot
+ 
+    - name: Enable Jenkins service
       systemd:
         name: jenkins
         enabled: true
-
-    - name: Wait for Jenkins to be available
+ 
+    - name: Wait for Jenkins port 8080 to be available
       wait_for:
-        delay: 30
         port: 8080
-
-    - name: Get the Jenkins Admin Password
+        delay: 30
+        state: started
+ 
+    - name: Get Jenkins initial admin password
       shell: cat /var/lib/jenkins/secrets/initialAdminPassword
       register: jenkinspass
-
-    - name: Print Jenkins Admin Password
+ 
+    - name: Display Jenkins admin password
       debug:
         var: jenkinspass.stdout
